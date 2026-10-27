@@ -37,12 +37,17 @@
       slides.forEach(function (s, k) { s.classList.toggle("on", k === i); s.setAttribute("aria-hidden", k === i ? "false" : "true"); });
       dots.forEach(function (d, k) { d.setAttribute("aria-current", k === i ? "true" : "false"); });
     }
-    function restart() { if (reduce) return; clearInterval(timer); timer = setInterval(function () { go(i + 1); }, 4500); }
+    /* a slide with data-href (the game website sample) opens its page when clicked */
+    var box = document.querySelector(".slides");
+    box.addEventListener("click", function () { var h = slides[i].getAttribute("data-href"); if (h) location.href = h; });
+    function cursor() { box.style.cursor = slides[i].hasAttribute("data-href") ? "pointer" : ""; }
+    var _go = go; go = function (n) { _go(n); cursor(); };
+    /* plays through every slide on its own, non-stop */
+    function restart() { clearInterval(timer); timer = setInterval(function () { go(i + 1); }, 4000); }
+    /* manual control too: arrows + dots; auto-play carries on afterwards */
     var prev = document.querySelector("[data-prev]"), next = document.querySelector("[data-next]");
     if (prev) prev.addEventListener("click", function () { go(i - 1); restart(); });
     if (next) next.addEventListener("click", function () { go(i + 1); restart(); });
-    var sl = document.querySelector(".slider");
-    if (sl) { sl.addEventListener("mouseenter", function () { clearInterval(timer); }); sl.addEventListener("mouseleave", restart); }
     go(0); restart();
   }
 
@@ -77,10 +82,12 @@
       var subject = f.subject.value.trim() || "Enquiry from website", body = f.message.value.trim();
       if (!name || !body) { msg.textContent = "Please add your name and a message."; return; }
       var text = body + "\n\n— " + name + (from ? "\nEmail: " + from : "") + (phone ? "\nPhone: " + phone : "");
-      var url = "https://mail.google.com/mail/?view=cm&fs=1&to=" + encodeURIComponent(EMAIL) +
+      var compose = "https://mail.google.com/mail/?view=cm&fs=1&to=" + encodeURIComponent(EMAIL) +
         "&su=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(text);
+      /* general Google sign-in first (login / create account), then the ready message */
+      var url = "https://accounts.google.com/AddSession?service=mail&continue=" + encodeURIComponent(compose);
       var w = window.open(url, "_blank", "noopener");
-      msg.textContent = w ? "Gmail opened in a new tab — press Send there." : "Opening Gmail…";
+      msg.textContent = w ? "Gmail opened in a new tab — sign in (or create an account), then press Send." : "Opening Gmail…";
       if (!w) window.location.href = url;
     });
   }
