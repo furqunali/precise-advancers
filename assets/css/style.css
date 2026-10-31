@@ -214,7 +214,14 @@ main { display: block; flex: 1 0 auto; padding-bottom: 40px; }
 .offer-head .tagline { font: 800 clamp(1.1rem, 2.6vw, 1.6rem) var(--font-head); color: #ff8a97; letter-spacing: .04em; text-shadow: 0 2px 0 rgba(0,0,0,.4); }
 .tiles { display: grid; grid-template-columns: repeat(6, minmax(0, 150px)); justify-content: space-between; gap: 18px; padding-bottom: 10px; }
 /* the 2016 tile covers, rebuilt: slanted 3D card, thick dark side, chrome letters, turns light blue on hover */
-.tiles { perspective: 900px; }
+.tiles { perspective: 900px; padding-bottom: 56px; }
+/* umbrella arc, as on the 2016 home page: ends high, middle low, each card turned toward the centre */
+.tiles .tile:nth-child(1) { --ry: 24deg;  --dy: 0px; }
+.tiles .tile:nth-child(2) { --ry: 16deg;  --dy: 20px; }
+.tiles .tile:nth-child(3) { --ry: 7deg;   --dy: 46px; }
+.tiles .tile:nth-child(4) { --ry: -7deg;  --dy: 46px; }
+.tiles .tile:nth-child(5) { --ry: -16deg; --dy: 20px; }
+.tiles .tile:nth-child(6) { --ry: -24deg; --dy: 0px; }
 .tile {
   --c: var(--pd);
   position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
@@ -223,7 +230,7 @@ main { display: block; flex: 1 0 auto; padding-bottom: 40px; }
     linear-gradient(115deg, rgba(255,255,255,.16) 0 30%, rgba(255,255,255,0) 30.5%),
     linear-gradient(165deg, color-mix(in srgb, var(--c) 82%, #fff), var(--c) 45%, color-mix(in srgb, var(--c) 70%, #000));
   border: 1px solid rgba(255,255,255,.28);
-  transform: rotateY(-16deg) rotateX(8deg);
+  transform: translateY(var(--dy, 0px)) rotateY(var(--ry, -16deg)) rotateX(8deg);
   box-shadow:
     0 1px 0 rgba(255,255,255,.35) inset,
     7px 8px 0 color-mix(in srgb, var(--c) 40%, #000), 8px 9px 0 rgba(255,255,255,.08),
@@ -244,14 +251,14 @@ main { display: block; flex: 1 0 auto; padding-bottom: 40px; }
 .tile.pm { --c: var(--pm); } .tile.pe { --c: var(--pe); } .tile.po { --c: var(--po); }
 .tiles .tile:hover, .tiles .tile:focus-visible {
   --c: #5f86c4;
-  transform: rotateY(-6deg) rotateX(4deg) translateY(-6px);
+  transform: translateY(calc(var(--dy, 0px) - 8px)) rotateY(calc(var(--ry, -16deg) * .4)) rotateX(4deg);
   box-shadow: 0 1px 0 rgba(255,255,255,.5) inset, 9px 11px 0 #2c4a78, 10px 12px 0 rgba(255,255,255,.1), 22px 32px 30px -6px rgba(0,0,0,.85);
 }
 .tiles .tile:hover b, .tiles .tile:focus-visible b {
   background: linear-gradient(180deg, #f2f7ff 0%, #c9dbf5 44%, #8eaedc 50%, #c3d6f2 70%, #a9c3ea 100%);
   -webkit-background-clip: text; background-clip: text;
 }
-.tiles .tile:active { transform: rotateY(-6deg) rotateX(4deg) translateY(3px); box-shadow: 0 1px 0 rgba(255,255,255,.5) inset, 2px 3px 0 #2c4a78, 6px 10px 12px -4px rgba(0,0,0,.8); }
+.tiles .tile:active { transform: translateY(calc(var(--dy, 0px) + 3px)) rotateY(calc(var(--ry, -16deg) * .4)) rotateX(4deg); box-shadow: 0 1px 0 rgba(255,255,255,.5) inset, 2px 3px 0 #2c4a78, 6px 10px 12px -4px rgba(0,0,0,.8); }
 
 /* ---------- about ---------- */
 .about-top { display: grid; grid-template-columns: 1fr 220px; gap: 26px; align-items: center; padding: 28px 30px; }
@@ -389,6 +396,19 @@ main { display: block; flex: 1 0 auto; padding-bottom: 40px; }
 .dots button[aria-current="true"] { background: radial-gradient(circle at 35% 30%, #fff 0 15%, #ff6274 40%, var(--red-deep)); box-shadow: 0 2px 0 #7d1220, 0 0 10px rgba(232,54,74,.8); }
 .dots button:active { transform: translateY(2px); box-shadow: none; }
 
+/* music on/off button (bottom-left, every page) */
+.music-btn {
+  position: fixed; left: 16px; bottom: 16px; z-index: 60; width: 52px; height: 52px; border-radius: 50%;
+  display: grid; place-items: center; cursor: pointer; color: #fff; font-size: 1.45rem; line-height: 1;
+  border: 1px solid rgba(255,255,255,.45); --edge: rgba(4,9,14,.85);
+  background: linear-gradient(180deg, rgba(255,255,255,.3), rgba(255,255,255,.07) 50%, rgba(0,0,0,.2)), rgba(43,66,86,.95);
+  box-shadow: 0 1px 0 rgba(255,255,255,.5) inset, 0 4px 0 var(--edge), 0 14px 22px -8px rgba(0,0,0,.9);
+  transition: transform .15s var(--ease), box-shadow .15s var(--ease);
+}
+.music-btn[aria-pressed="true"] { --edge: #7d1220; background: linear-gradient(180deg, #ff6274 0%, var(--red) 50%, var(--red-deep) 100%); animation: beat 1.2s ease-in-out infinite; }
+.music-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(255,255,255,.4) inset, 0 1px 0 var(--edge); }
+@keyframes beat { 50% { box-shadow: 0 1px 0 rgba(255,255,255,.5) inset, 0 4px 0 var(--edge), 0 0 22px rgba(232,54,74,.85); } }
+
 /* ---------- reveal on scroll ---------- */
 .reveal { opacity: 0; transform: translateY(26px); transition: opacity .8s var(--ease), transform .8s var(--ease); }
 .reveal.in { opacity: 1; transform: none; }
@@ -396,7 +416,8 @@ main { display: block; flex: 1 0 auto; padding-bottom: 40px; }
 /* ---------- responsive ---------- */
 @media (max-width: 1000px) {
   .hero, .cat-body, .contact-grid { grid-template-columns: 1fr; }
-  .tiles { grid-template-columns: repeat(3, minmax(0, 150px)); justify-content: center; gap: 28px 26px; }
+  .tiles { grid-template-columns: repeat(3, minmax(0, 150px)); justify-content: center; gap: 28px 26px; padding-bottom: 10px; }
+  .tiles .tile { --dy: 0px !important; --ry: -12deg !important; }
   .cards { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 760px) {
@@ -417,6 +438,7 @@ main { display: block; flex: 1 0 auto; padding-bottom: 40px; }
   .prose, .cat-text, .form, .contact-card { padding: 22px; }
   .prose p, .about-top p { margin-left: 0; }
   .foot { flex-direction: column; text-align: center; }
+  .site-footer { padding-bottom: 86px; }   /* room for the music button */
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
