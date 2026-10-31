@@ -21,33 +21,57 @@
     });
   }
 
-  /* home slider (replaces the 2016 WOWSlider) */
+  /* home slider: 3D cube that turns up and down, like the 2016 WOWSlider ("cube_over") */
   var slides = Array.prototype.slice.call(document.querySelectorAll(".slides picture"));
   var dotsBox = document.querySelector(".dots");
   if (slides.length && dotsBox) {
-    var i = 0, timer = null, dots = [];
+    var i = 0, timer = null, dots = [], turning = [], flip = 1;
+    var box = document.querySelector(".slides");
     slides.forEach(function (_, n) {
       var d = document.createElement("button");
       d.type = "button"; d.setAttribute("aria-label", "Show slide " + (n + 1));
-      d.addEventListener("click", function () { go(n); restart(); });
+      d.addEventListener("click", function () { if (n !== i) go(n, n > i ? 1 : -1); restart(); });
       dotsBox.appendChild(d); dots.push(d);
     });
-    function go(n) {
+    /* dir 1 = cube turns up (next face comes from below), -1 = turns down */
+    function cube(from, to, dir) {
+      /* a new turn (fast clicks) first stops and tidies the previous one */
+      turning.forEach(function (a) { a.cancel(); });
+      turning = [];
+      slides.forEach(function (s) { s.classList.remove("turning"); s.style.transformOrigin = ""; });
+      if (reduce || !from.animate || from === to) return;
+      var origin = "50% 50% -" + box.offsetHeight / 2 + "px";
+      var t = { duration: 1800, easing: "cubic-bezier(.68,-0.3,.27,1.3)" };
+      [from, to].forEach(function (s) { s.style.transformOrigin = origin; s.classList.add("turning"); });
+      turning = [
+        from.animate([{ transform: "scale(1) rotateX(0deg)" },
+                      { transform: "scale(.82) rotateX(" + 45 * dir + "deg)", offset: .5 },
+                      { transform: "scale(1) rotateX(" + 90 * dir + "deg)" }], t),
+        to.animate([{ transform: "scale(1) rotateX(" + -90 * dir + "deg)" },
+                    { transform: "scale(.82) rotateX(" + -45 * dir + "deg)", offset: .5 },
+                    { transform: "scale(1) rotateX(0deg)" }], t)
+      ];
+      turning[1].onfinish = function () {
+        turning = [];
+        [from, to].forEach(function (s) { s.classList.remove("turning"); s.style.transformOrigin = ""; });
+      };
+    }
+    function go(n, dir) {
+      var from = slides[i];
       i = (n + slides.length) % slides.length;
       slides.forEach(function (s, k) { s.classList.toggle("on", k === i); s.setAttribute("aria-hidden", k === i ? "false" : "true"); });
       dots.forEach(function (d, k) { d.setAttribute("aria-current", k === i ? "true" : "false"); });
+      box.style.cursor = slides[i].hasAttribute("data-href") ? "pointer" : "";
+      if (dir) cube(from, slides[i], dir);
     }
     /* a slide with data-href (the game website sample) opens its page when clicked */
-    var box = document.querySelector(".slides");
     box.addEventListener("click", function () { var h = slides[i].getAttribute("data-href"); if (h) location.href = h; });
-    function cursor() { box.style.cursor = slides[i].hasAttribute("data-href") ? "pointer" : ""; }
-    var _go = go; go = function (n) { _go(n); cursor(); };
-    /* plays through every slide on its own, non-stop */
-    function restart() { clearInterval(timer); timer = setInterval(function () { go(i + 1); }, 4000); }
+    /* plays on its own, non-stop: turns up, then down, then up ... (2 s turn + 2 s still, as in 2016) */
+    function restart() { clearInterval(timer); timer = setInterval(function () { go(i + 1, flip); flip = -flip; }, 4000); }
     /* manual control too: arrows + dots; auto-play carries on afterwards */
     var prev = document.querySelector("[data-prev]"), next = document.querySelector("[data-next]");
-    if (prev) prev.addEventListener("click", function () { go(i - 1); restart(); });
-    if (next) next.addEventListener("click", function () { go(i + 1); restart(); });
+    if (prev) prev.addEventListener("click", function () { go(i - 1, -1); restart(); });
+    if (next) next.addEventListener("click", function () { go(i + 1, 1); restart(); });
     go(0); restart();
   }
 
