@@ -423,8 +423,10 @@ main { display: block; flex: 1 0 auto; padding-bottom: 40px; }
   .reveal { opacity: 1; transform: none; }
 }
 
-/* GitHub copy only: school row on top of every page */
-.school-row {
+/* GitHub copy only: school row on top of every page, INSIDE the sticky header,
+   so school row + Precise Advancers row stay fixed together (nothing moves on scroll) */
+.site-header:has(.school-row) { padding-top: 0; }
+.school-row { margin-bottom: 14px;
   background: linear-gradient(180deg, #05090d, #0b131b); border-bottom: 1px solid rgba(255,255,255,.12);
   box-shadow: 0 1px 0 rgba(232,54,74,.55); text-align: center; padding: 9px 16px;
   font: 700 .95rem/1.35 var(--font-head); letter-spacing: .08em; color: #e6edf3;
